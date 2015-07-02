@@ -16,6 +16,7 @@ end.parse!
 
 raise "Invalid git repository: #{options[:repo]}" unless options[:repo] =~ /.git/
 options[:path] ||= "#{Dir.pwd}/#{File.basename options[:repo], '.git'}"
+options[:path] = File.expand_path options[:path]
 
 if Dir.exist? "#{options[:path]}/.git"
   Announce.info "Pulling repository at #{options[:path]}"
