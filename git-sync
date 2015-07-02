@@ -6,24 +6,23 @@ require 'terminal-announce'
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: git-sync --from <git-repo> --to <local-path>"
-  opts.on("--from REPO", "Git repository to sync.") do |repo|
+  opts.on("--from REPO", "Git repository to sync. Required.") do |repo|
     options[:repo] = repo
   end
-  opts.on("--to PATH", "Local path to clone or pull into.") do |path|
+  opts.on("--to PATH", "Local path to clone or pull into. Defaults to the working directory.") do |path|
     options[:path] = path
   end
 end.parse!
 
-p options
-
 raise "Invalid git repository: #{options[:repo]}" unless options[:repo] =~ /.git/
+options[:path] ||= "#{Dir.pwd}/#{File.basename options[:repo], '.git'}"
 
-if Dir.exist? options[:path]
-  Announce.info "Pulling repository at #{File.expand_path options[:path]}"
+if Dir.exist? "#{options[:path]}/.git"
+  Announce.info "Pulling repository at #{options[:path]}"
   git = Git.open options[:path]
   puts git.pull
 else
-  Announce.info "Cloning repository to #{File.expand_path options[:path]}"
+  Announce.info "Cloning repository to #{options[:path]}"
   directory, path = File.basename(options[:path]), File.dirname(options[:path])
   Git.clone options[:repo], directory, path: path
 end
