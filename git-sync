@@ -3,24 +3,21 @@ require 'git'
 require 'optparse'
 require 'terminal-announce'
 
-options = {repo: ARGV[0]}
 OptionParser.new do |opts|
-  opts.banner = "Usage: git-sync <repo>"
-  opts.on("--to PATH", "Local path to clone or pull into. Defaults to the working directory.") do |path|
-    options[:path] = path
-  end
+  opts.banner = "Usage: git-sync <repo> [path]"
 end.parse!
 
-raise "Invalid git repository: #{options[:repo]}" unless options[:repo] =~ /.git/
-options[:path] ||= "#{Dir.pwd}/#{File.basename options[:repo], '.git'}"
-options[:path] = File.expand_path options[:path]
+repo = ARGV[0]
+raise "Invalid git repository: #{repo}" unless repo =~ /.git/
+path = ARGV[1] || "#{Dir.pwd}/#{File.basename repo, '.git'}"
+path = File.expand_path path
 
-if Dir.exist? "#{options[:path]}/.git"
-  Announce.info "Pulling repository at #{options[:path]}"
-  git = Git.open options[:path]
+if Dir.exist? "#{path}/.git"
+  Announce.info "Pulling repository at #{path}"
+  git = Git.open path
   puts git.pull
 else
-  Announce.info "Cloning repository to #{options[:path]}"
-  directory, path = File.basename(options[:path]), File.dirname(options[:path])
-  Git.clone options[:repo], directory, path: path
+  Announce.info "Cloning repository to #{path}"
+  directory, path = File.basename(path), File.dirname(path)
+  Git.clone repo, directory, path: path
 end
